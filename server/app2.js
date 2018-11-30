@@ -28,6 +28,14 @@ app.post('/json', (req, res) => {
     })
 });
 
+app.get('/get', (req, res) => {
+    console.log(req.url);
+    res.send({
+        resultCode: 1000,
+        message: 'successs'
+    })
+});
+
 let server = app.listen(20000, () =>{
     console.log(`started the server,the port is 20000`);
 });

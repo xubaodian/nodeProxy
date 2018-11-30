@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>POST请求</title>
+  <title>get请求</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="./jquery.js"></script>
 </head>
@@ -14,7 +14,7 @@
   <div>
     年龄：<input type="text" id="age">
   </div>
-  <button onclick="submit()">发送</button>
+  <button onclick="submit()">get请求</button>
   <script>
     function submit() {
       let data = {
@@ -22,8 +22,8 @@
         age: document.getElementById('age').value
       };
       $.ajax({
-        url: '/json',
-        type: 'POST',
+        url: '/get',
+        type: 'GET',
         data: data,
         success: function(res) {
           console.log(res);
