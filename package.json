@@ -11,5 +11,8 @@
   "devDependencies": {
     "express": "^4.16.3",
     "jquery": "^3.3.1"
+  },
+  "dependencies": {
+    "multer": "^1.4.1"
   }
 }

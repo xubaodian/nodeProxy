@@ -1,6 +1,7 @@
 const http = require('http');
 const querystring = require('querystring');
 
+//获取文件头函数，用获取cookie作为示例
 let getHeader = (reqClient) => {
     let headers = reqClient.headers; 
     headers.path = reqClient.path;
@@ -10,6 +11,7 @@ let getHeader = (reqClient) => {
     return headers;
 }
 
+//代理函数，返回值是函数
 let proxy = (options) => {
     let reqOptions = {
         hostname: options.host,
@@ -17,7 +19,6 @@ let proxy = (options) => {
     }
     
     return function (reqClient, resClient) {
-        console.log(reqClient.query);
         let headers = getHeader(reqClient);
         reqOptions.headers = reqClient.headers;
         let query = [];
@@ -30,33 +31,42 @@ let proxy = (options) => {
         }
         reqOptions.cookie = headers.cookie;
         reqOptions.method = reqClient.method;
-
+        //向目标服务器发送请求
         let reqProxy = http.request(reqOptions, (resProxy) => {
             if (resProxy.statusCode === 200) {
-                console.log(`响应头: ${JSON.stringify(resProxy.headers)}`);
                 resProxy.setEncoding('utf8');
-                let data = '';
+                //设置返回http头
+                resClient.set(resProxy.headers);
+                //向浏览器写数据。
                 resProxy.on('data', (chunk) => {
-                    data += chunk;
-                    console.log(`响应主体: ${chunk}`);
+                    resClient.write(chunk);
                 });
-                //接收目标服务器数据，再次对数据和返回头进行处理，然后返回请求
                 resProxy.on('end', () => {
-                    resClient.set(resProxy.headers);
-                    resClient.send(JSON.parse(data));
+                    resClient.end();
                 });
             } else {
                 resClient.status(400).send('Bad Request');
             }
         });
+        //请求目标服务器错误处理
         reqProxy.on('error', (err) => {
             resClient.status(400).send('Bad Request');
             console.error(`a request error occurred: ${err.message}`);
         });
     
-        reqProxy.write(querystring.stringify(reqClient.body));
-        reqProxy.end();
+        //文件上传代理，向目标服务器写数据
+        reqClient.on('data', (chunk) => {
+            reqProxy.write(chunk);
+        });
+        reqClient.on('end', () => {
+            reqProxy.end();
+        });
         
+        //普通JSON数据代理
+         if (Object.keys(reqClient.body).length) {
+             reqProxy.write(querystring.stringify(reqClient.body));
+             reqProxy.end();
+         }
     }
 }
 

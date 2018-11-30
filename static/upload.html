@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>文件传输</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./jquery.js"></script>
+</head>
+<body>
+  <input type="file" id="fileList">
+  <button onclick="submit()">上传文件</button>
+  <script>
+    function submit() {
+      let fileList = document.getElementById('fileList');
+      if (fileList.files.length > 0) {
+        let data = new FormData();
+        data.append('file', fileList.files[0]);
+        data.append('name', fileList.files[0].name);
+        $.ajax({
+          url: '/upload',
+          type: 'POST',
+          processData: false,
+          contentType: false,
+          data: data,
+          success: function(res) {
+            console.log(res);
+          },
+          error: function (err) {
+            console.error(err);
+          }
+        });
+      } else {
+        alert('请选择文件！');
+      }
+    }
+  </script>
+</body>
+</html>
