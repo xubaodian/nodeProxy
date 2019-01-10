@@ -1,7 +1,7 @@
 const http = require('http');
 const querystring = require('querystring');
 
-//获取文件头函数，用获取cookie作为示例
+//获取cookie和query
 let getHeader = (reqClient) => {
     let headers = reqClient.headers; 
     headers.path = reqClient.path;
@@ -33,20 +33,20 @@ let proxy = (options) => {
         reqOptions.method = reqClient.method;
         //向目标服务器发送请求
         let reqProxy = http.request(reqOptions, (resProxy) => {
-            if (resProxy.statusCode === 200) {
-                resProxy.setEncoding('utf8');
-                //设置返回http头
-                resClient.set(resProxy.headers);
-                //向浏览器写数据。
-                resProxy.on('data', (chunk) => {
-                    resClient.write(chunk);
-                });
-                resProxy.on('end', () => {
-                    resClient.end();
-                });
-            } else {
-                resClient.status(400).send('Bad Request');
-            }
+            resProxy.setEncoding('utf8');
+            //设置返回http头
+            resClient.set(resProxy.headers);
+            resClient.status(resProxy.statusCode);
+            //向浏览器写数据。
+            resProxy.on('data', (chunk) => {
+                resClient.write(chunk);
+            });
+            resProxy.on('end', () => {
+                resClient.end();
+            });
+            resProxy.on('error', () => {
+                resClient.end();
+            });
         });
         //请求目标服务器错误处理
         reqProxy.on('error', (err) => {
